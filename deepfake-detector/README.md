@@ -99,7 +99,7 @@ python3 -m venv venv
 3. Activate the virtual environment
 
 ```sh
-source venv/bin/activate
+ venv/Scripts/activate
 ```
 
 4. Install the requirements
