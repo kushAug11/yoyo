@@ -9,11 +9,65 @@ type UseImageDropzoneReturn = {
   getInputProps: () => any;
 };
 
-export const useImageDropzone = () => {
+// Function to resize image to 256x256
+
+// drawing canvas in cartesian plane 
+// then trying to do it
+// in this format (x-coordinate, y-coordinate)
+
+//
+const resizeImage = (file: File): Promise<File> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      img.src = e.target?.result as string;
+    };
+
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 256;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Canvas context not available'));
+        return;
+      }
+      ctx.drawImage(img, 0, 0, 256, 256);
+
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const resizedFile = new File([blob], file.name, {
+            type: 'image/jpeg',
+            lastModified: Date.now(),
+          });
+          resolve(resizedFile);
+        } else {
+          reject(new Error('Failed to create blob'));
+        }
+      }, 'image/jpeg', 0.9);
+    };
+
+    img.onerror = () => reject(new Error('Failed to load image'));
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
+  });
+};
+
+
+
+export const useImageDropzone = (): UseImageDropzoneReturn => {
   const [file, setFile] = useState<File | undefined>();
 
-  const onDrop = (acceptedFiles: File[]) => {
-    setFile(acceptedFiles[0]);
+  const onDrop = async (acceptedFiles: File[]) => {
+    if (acceptedFiles.length === 0) return;
+    try {
+      const resizedFile = await resizeImage(acceptedFiles[0]);
+      setFile(resizedFile);
+    } catch (error) {
+      console.error('Error resizing image:', error);
+    }
   };
 
   const onRemove = () => {
@@ -24,20 +78,18 @@ export const useImageDropzone = () => {
     accept: {
       'image/jpeg': ['.jpeg', '.jpg'],
     },
-    maxSize: 20 * 1000,
+    maxSize: 20 * 1024 * 1024, // Increased to 20MB to allow larger images before resizing
     maxFiles: 1,
     onDrop,
   });
 
-  const fileRejectionItems = fileRejections.map(({ file, errors }) => {
-    return (
-      <ul key={file.name}>
-        {errors.map((e) => (
-          <li key={e.code}>{e.message}</li>
-        ))}
-      </ul>
-    );
-  });
+  const fileRejectionItems = fileRejections.map(({ file, errors }) => (
+    <ul key={file.name}>
+      {errors.map((e) => (
+        <li key={e.code}>{e.message}</li>
+      ))}
+    </ul>
+  ));
 
   return {
     file,
@@ -47,3 +99,8 @@ export const useImageDropzone = () => {
     getInputProps,
   };
 };
+
+
+
+// kya hi kr skte hain 
+// agr hum canvas ko plot kr denge 

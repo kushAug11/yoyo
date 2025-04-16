@@ -66,7 +66,7 @@ export default function ImageDropzone() {
           <div className="flex gap-2 items-center text-warning">
             <WarningIcon />
             <p className="text-lg">
-              File should be 256x256px, and in .jpg format.
+              File should be in .jpg format.
             </p>
           </div>
         </div>
@@ -87,7 +87,7 @@ export default function ImageDropzone() {
                 <Button
                   isIconOnly
                   color="danger"
-                  aria-label="Like"
+                  aria-label="Remove"
                   onClick={onRemove}
                 >
                   <TrashIcon />
@@ -113,3 +113,7 @@ export default function ImageDropzone() {
     </>
   );
 }
+
+
+// use the canvas 
+// 
